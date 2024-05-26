@@ -15,10 +15,13 @@ expression: visualization.result
   v10_: int = const 3;
   v11_: int = id v10_;
   br v4_ .v12_ .v13_;
-.v12_:
-  v11_: int = id v5_;
 .v13_:
   v7_: int = id v11_;
+  print v7_;
+  ret;
+.v12_:
+  v11_: int = id v5_;
+  jmp .v13_;
 .v9_:
   print v7_;
 }

@@ -14,10 +14,13 @@ expression: visualization.result
   v9_: bool = eq v0 v5_;
   v10_: int = id v2_;
   br v9_ .v11_ .v12_;
-.v11_:
-  v10_: int = id v2_;
 .v12_:
   v6_: int = id v2_;
+  print v2_;
+  ret;
+.v11_:
+  v10_: int = id v2_;
+  jmp .v12_;
 .v7_:
   print v2_;
 }

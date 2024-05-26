@@ -8,12 +8,12 @@ expression: visualization.result
   v3_: int = const 2;
   v4_: bool = lt v0 v3_;
   br v4_ .v5_ .v6_;
-.v5_:
+.v6_:
   print v2_;
   v7_: int = id v2_;
   print v2_;
   ret;
-.v6_:
+.v5_:
   print v2_;
   v7_: int = id v2_;
 .v8_:

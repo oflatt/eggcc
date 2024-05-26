@@ -7,8 +7,8 @@ expression: visualization.result
   v2_: int = const 1;
   v3_: ptr<int> = alloc v2_;
   br v0 .v4_ .v5_;
-.v4_:
-  v6_: int = const 2;
+.v5_:
+  v6_: int = const 3;
   store v3_ v6_;
   v7_: ptr<int> = id v3_;
   v8_: int = load v3_;
@@ -16,8 +16,8 @@ expression: visualization.result
   print v8_;
   free v3_;
   ret;
-.v5_:
-  v10_: int = const 3;
+.v4_:
+  v10_: int = const 2;
   store v3_ v10_;
   v7_: ptr<int> = id v3_;
 .v11_:
