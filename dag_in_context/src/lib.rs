@@ -62,6 +62,8 @@ pub fn prologue() -> String {
         &optimizations::loop_invariant::rules().join("\n"),
         include_str!("optimizations/loop_simplify.egg"),
         include_str!("optimizations/loop_unroll.egg"),
+        include_str!("optimizations/swap_if.egg"),
+        include_str!("optimizations/rec_to_loop.egg"),
         include_str!("optimizations/passthrough.egg"),
         include_str!("optimizations/loop_strength_reduction.egg"),
         include_str!("utility/debug-helper.egg"),
@@ -252,7 +254,8 @@ pub fn optimize(
     {
         log::info!("Running pass {}...", i);
         // only inline functions on the first pass
-        let egglog_prog = build_program(&res, cache, i == 0, schedule);
+        // TODO don't inline!
+        let egglog_prog = build_program(&res, cache, false, schedule);
 
         log::info!("Running egglog program...");
         let mut egraph = egglog::EGraph::default();
