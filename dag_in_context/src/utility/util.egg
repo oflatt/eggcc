@@ -1,7 +1,7 @@
 (function ListExpr-length (ListExpr) i64)
-(function ListExpr-ith (ListExpr i64) Expr :unextractable)
-(function ListExpr-suffix (ListExpr i64) ListExpr :unextractable)
-(function Append (ListExpr Expr) ListExpr :unextractable)
+(function ListExpr-ith (ListExpr i64) Expr )
+(function ListExpr-suffix (ListExpr i64) ListExpr )
+(function Append (ListExpr Expr) ListExpr )
 
 (rule ((Switch pred inputs branch)) ((union (ListExpr-suffix branch 0) branch)) :ruleset always-run)
 
@@ -19,7 +19,7 @@
    (Cons e (Nil))
    :ruleset always-run)
 
-(function tuple-length (Expr) i64 :unextractable)
+(function tuple-length (Expr) i64 )
 
 (rule ((HasType expr (TupleT tl))
        (= len (TypeList-length tl)))

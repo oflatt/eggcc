@@ -5,8 +5,8 @@
 
 (ruleset context)
 
-(function AddContext (Assumption Expr) Expr :unextractable)
-(function AddContextList (Assumption ListExpr) ListExpr :unextractable)
+(function AddContext (Assumption Expr) Expr )
+(function AddContextList (Assumption ListExpr) ListExpr )
 
 ;; ################################ saturation
 

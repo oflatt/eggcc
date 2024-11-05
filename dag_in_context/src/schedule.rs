@@ -4,7 +4,7 @@ pub(crate) fn helpers() -> String {
 
     (saturate type-helpers)
     (saturate error-checking)
-    state-edge-passthrough
+    ;state-edge-passthrough
 
     (saturate
         (saturate type-helpers)
@@ -34,23 +34,20 @@ pub(crate) fn helpers() -> String {
 }
 
 fn cheap_optimizations() -> Vec<String> {
-    ["loop-simplify", "memory", "peepholes"]
-        .iter()
-        .map(|opt| opt.to_string())
-        .collect()
+    vec![]
 }
 
 fn optimizations() -> Vec<String> {
     [
-        "loop-unroll",
-        "switch_rewrite",
+        //"loop-unroll",
+        //"switch_rewrite",
         "loop-inv-motion",
-        "loop-strength-reduction",
-        "loop-peel",
-        "rec-to-loop",
+        //"loop-strength-reduction",
+        //"loop-peel",
+        //"rec-to-loop",
     ]
     .iter()
-    .map(|opt| opt.to_string())
+    .map(|opt: &&str| opt.to_string())
     .chain(cheap_optimizations())
     .collect()
 }
@@ -59,13 +56,13 @@ fn saturating_rulesets() -> Vec<String> {
     [
         "always-run",
         "passthrough",
-        "canon",
+        //"canon",
         "type-analysis",
         "context",
-        "interval-analysis",
-        "memory-helpers",
-        "always-switch-rewrite",
-        "loop-iters-analysis",
+        //"interval-analysis",
+        //"memory-helpers",
+        //"always-switch-rewrite",
+        //"loop-iters-analysis",
     ]
     .iter()
     .map(|opt| opt.to_string())
@@ -118,17 +115,9 @@ pub fn parallel_schedule() -> Vec<String> {
     vec![format!(
         "
 (run-schedule
-    {helpers}
-    (repeat 2 swap-if)
-
     (repeat 2
         {helpers}
         all-optimizations
-    )
-
-    (repeat 4
-        {helpers}
-        cheap-optimizations
     )
 
     {helpers}

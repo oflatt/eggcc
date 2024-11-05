@@ -211,7 +211,7 @@
 ; ============================
 
 ;                             arg pointees  result pointees
-(function PointsToCells (Expr Pointees)     Pointees :unextractable) 
+(function PointsToCells (Expr Pointees)     Pointees ) 
 
 ; Top-level demand
 (rule ((Function name in-ty out-ty body))
@@ -333,7 +333,7 @@
       :ruleset memory-helpers)
 
 ; avoid quadratic query
-(function succ (i64) i64 :unextractable)
+(function succ (i64) i64 )
 (rule ((PointsToCellsAtIter aps inputs pred-body i))
       ((set (succ i) (+ i 1)))
       :ruleset memory-helpers)
@@ -395,7 +395,7 @@
 ; ============================
 
 ;                       program point, pointer
-(function PointsToExpr (Expr           Expr) Expr :unextractable)
+(function PointsToExpr (Expr           Expr) Expr )
 
 ; After a load, the ptr points to the loaded value
 (rule ((= f (Bop (Load) ptr state)))

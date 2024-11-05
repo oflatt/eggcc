@@ -1,15 +1,15 @@
 (ruleset type-analysis)
 (ruleset type-helpers)       ;; these rules need to saturate between every iter of type-analysis rules
 
-(function TLConcat (TypeList TypeList) TypeList :unextractable)
+(function TLConcat (TypeList TypeList) TypeList )
 (rewrite (TLConcat (TNil) r) r :ruleset type-helpers)
 (rewrite (TLConcat (TCons hd tl) r)
          (TCons hd (TLConcat tl r))
          :ruleset type-helpers)
 
-(function TypeList-length (TypeList) i64 :unextractable)
-(function TypeList-ith (TypeList i64) BaseType :unextractable)
-(function TypeList-suffix (TypeList i64) TypeList :unextractable)
+(function TypeList-length (TypeList) i64 )
+(function TypeList-ith (TypeList i64) BaseType )
+(function TypeList-suffix (TypeList i64) TypeList )
 
 (rule ((TupleT tylist)) ((union (TypeList-suffix tylist 0) tylist)) :ruleset type-helpers)
 
@@ -131,7 +131,9 @@
        (HasType i ty)
        (HasArgType t ty2)
        (!= ty ty2))
-      ((panic "if branches then branch has incorrect input type"))
+      ((extract ty)
+       (extract ty2)
+      (panic "if branches then branch has incorrect input type"))
       :ruleset error-checking)
 (rule ((= lhs (If c i t e))
        (HasType i ty)

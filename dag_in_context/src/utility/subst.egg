@@ -11,21 +11,18 @@
 ;; It also replaces the leaf context in `to` with `assumption` using `AddContext`.
 ;; `assumption` *justifies* this substitution, as the context that the result is used in.
 ;; In other words, it must refine the equivalence relation of `in` with `to` as the argument.
-(function Subst (Assumption Expr Expr) Expr :unextractable)
+(function Subst (Assumption Expr Expr) Expr )
 
 ;; Used to delay unions for the subst ruleset.
 ;; This is necessary because substitution may not terminate if it can
 ;; observe its own results- it may create infinitly large terms.
 ;; Instead, we phase substitution by delaying resulting unions in this table.
 ;; After applying this table, substitutions and this table are cleared.
-(function DelayedSubstUnion (Expr Expr) Expr :unextractable)
+(function DelayedSubstUnion (Expr Expr) Expr )
 
 ;; add a type rule to get the arg type of a substitution
 ;; this enables nested substitutions
-(rule ((= lhs (Subst assum to in))
-       (HasArgType to ty))
-      ((HasArgType lhs ty))
-      :ruleset subst)
+
 
 ;; leaf node with context
 ;; replace this context- subst assumes the context is more specific
