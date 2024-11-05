@@ -20,10 +20,6 @@
 ;; After applying this table, substitutions and this table are cleared.
 (function DelayedSubstUnion (Expr Expr) Expr )
 
-;; add a type rule to get the arg type of a substitution
-;; this enables nested substitutions
-
-
 ;; leaf node with context
 ;; replace this context- subst assumes the context is more specific
 (rule ((= lhs (Subst assum to (Arg ty oldctx)))
