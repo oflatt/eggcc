@@ -845,14 +845,14 @@ impl CostModel for DefaultCostModel {
     fn get_op_cost(&self, op: &str) -> Cost {
         match op {
             // Leaves
-            "Const" => 1.,
-            "Arg" => 0.,
+            "Const" => 0.,
+            "Arg" => 1.,
             _ if op.parse::<i64>().is_ok() || op.parse::<f64>().is_ok() || op.starts_with('"') => {
                 0.
             }
             "true" | "false" | "()" => 0.,
             // Lists
-            "Empty" | "Single" | "Concat" | "Get" | "Nil" | "Cons" => 0.,
+            "Empty" | "Single" | "Concat" | "Get" | "Nil" | "Cons" => 1.,
             // Types
             "IntT" | "BoolT" | "FloatT" | "PointerT" | "StateT" => 0.,
             "Base" | "TupleT" | "TNil" | "TCons" => 0.,

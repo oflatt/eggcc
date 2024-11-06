@@ -122,14 +122,20 @@
        (= (IntB la) (lo-bound a))
        (= (IntB hb) (hi-bound b))
       )
-      ((set (lo-bound lhs) (IntB (- la hb))))
+      ((extract la)
+       (extract hb)
+       (panic "huh")
+       (set (lo-bound lhs) (IntB (- la hb))))
       :ruleset interval-analysis)
 (rule (
        (= lhs (Bop (Sub) a b))
        (= (IntB ha) (hi-bound a))
        (= (IntB lb) (lo-bound b))
       )
-      ((set (hi-bound lhs) (IntB (- ha lb))))
+      ((extract ha)
+       (extract lb)
+       (panic "huh2")
+       (set (hi-bound lhs) (IntB (- ha lb))))
       :ruleset interval-analysis)
 
 ; Multiplication for two constants
@@ -207,7 +213,8 @@
        (ContextOf lhs if_ctx)
        (= (BoolB true) (lo-bound cond))
       )
-      ((union lhs (Subst if_ctx inputs thn)))
+      ((panic "true_cas")
+       (union lhs (Subst if_ctx inputs thn)))
       :ruleset interval-analysis)
 
 ; if the predicate is false, merge with else branch
@@ -250,38 +257,6 @@
        (= hi-els (hi-bound (Get els i)))
       )
       ((set (hi-bound (Get lhs i)) (bound-max hi-thn hi-els)))
-      :ruleset interval-analysis)
-
-; If the If takes a tuple
-(rule (
-        ; expr < value
-        (= pred (Bop (LessThan) expr value))
-        (= if_e (If pred inputs then else))
-        ; the left operand of the < is an input to the if region
-        (= expr (Get inputs i))
-        ; the right operand of the < has an upper bound
-        (= (IntB v) (hi-bound value))
-        ; context node inside the if region
-        (= ctx (Arg ty (InIf true pred inputs)))
-        (HasType inputs ty)
-      )
-      ; expr < value was true, so we know expr is at most (hi-bound value) - 1
-      ((set (hi-bound (Get ctx i)) (IntB (- v 1)))) 
-      :ruleset interval-analysis)
-(rule (
-        ; expr < value
-        (= pred (Bop (LessThan) expr value))
-        (= if_e (If pred inputs then else))
-        ; the left operand of the < is an input to the if region
-        (= expr (Get inputs i))
-        ; the right operand of the < has a lower bound
-        (= (IntB v) (lo-bound value))
-        ; context node inside the if region
-        (= ctx (Arg ty (InIf false pred inputs)))
-        (HasType inputs ty)
-      )
-      ; expr < value was false, so we know expr is at least (lo-bound value)
-      ((set (lo-bound (Get ctx i)) (IntB v))) 
       :ruleset interval-analysis)
 
 (rule (

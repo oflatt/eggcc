@@ -43,10 +43,11 @@
         
         (> 10 (Expr-size thn_out)) ; TODO: Tune these size limits
         (> 10 (Expr-size els_out))
+        (HasType (Get thn i) ty)
+        (!= ty (Base (StateT)))
        )
        (
-        (union (Get if_e i)
-               (Top (Select) pred (Subst ctx inputs thn_out) (Subst ctx inputs els_out)))
+         (Top (Select) pred (Subst ctx inputs thn_out) (Subst ctx inputs els_out))
        )
        :ruleset switch_rewrite
 )

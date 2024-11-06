@@ -20,6 +20,14 @@
      )
      :ruleset error-checking)
 
+(rule ((If pred inputs then else)
+       (ContextOf else (InIf true pred inputs)))
+    ((panic "here"))
+    :ruleset error-checking)
+
+(rule ((= (InIf true a b) (InIf false a b)))
+      ((panic "htere"))
+        :ruleset error-checking)
 
 (rule ((Top op x y z) (ContextOf x ctx))
     ((ContextOf (Top op x y z) ctx)) :ruleset always-run)
