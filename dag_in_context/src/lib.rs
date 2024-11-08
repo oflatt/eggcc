@@ -201,6 +201,7 @@ pub fn check_roundtrip_egraph(program: &TreeProgram) {
         unextractables,
         &mut termdag,
         DefaultCostModel,
+        &EggccConfig::default(),
     );
 
     let (original_with_ctx, _) = program.add_dummy_ctx();
@@ -224,6 +225,10 @@ pub enum Schedule {
 pub struct EggccConfig {
     pub schedule: Schedule,
     pub stop_after_n_passes: usize,
+    /// For debugging, disable extraction with linearity
+    /// and just return the first program found.
+    /// This produces unsound results but is useful for seeing the intermediate extracted result.
+    pub linearity: bool,
 }
 
 impl Default for EggccConfig {
@@ -231,6 +236,7 @@ impl Default for EggccConfig {
         Self {
             schedule: Schedule::default(),
             stop_after_n_passes: usize::MAX,
+            linearity: true,
         }
     }
 }
@@ -267,6 +273,7 @@ pub fn optimize(
             unextractables,
             &mut termdag,
             DefaultCostModel,
+            eggcc_config,
         );
         res = iter_result;
     }
