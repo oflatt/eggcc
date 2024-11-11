@@ -2,7 +2,7 @@
 // These are constraints that will break eggcc if not respected,
 // specifically linearity and inequality
 // Type helpers need to be run before error checking
-// passthrough depends on 
+// passthrough depends on
 // * substitution needs to be saturated before extraction
 //  * all the soft constraints need to be run before substitution
 
@@ -75,15 +75,11 @@ pub(crate) fn after_helpers() -> String {
 }
 
 fn cheap_optimizations() -> String {
-    [
-        "loop-simplify",
-        "memory",
-        "peepholes",
-    ]
-    .iter()
-    .map(|opt| opt.to_string())
-    .collect::<Vec<String>>()
-    .join("\n")
+    ["loop-simplify", "memory", "peepholes"]
+        .iter()
+        .map(|opt| opt.to_string())
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 fn optimizations() -> Vec<String> {
@@ -206,7 +202,7 @@ pub fn parallel_schedule() -> Vec<String> {
     // (run-schedule {helpers})
     // (run-schedule
     //     (saturate
-    //         (saturate 
+    //         (saturate
     //             (saturate type-helpers)
     //             type-analysis)
     //         (saturate is-resolved)
