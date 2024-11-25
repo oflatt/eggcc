@@ -89,7 +89,9 @@
       :ruleset drop)
 
 (rule ((= lhs (DropAtInternal newty newctx idx (Concat c1 c2)))
-       (ExprIsResolved (Concat c1 c2)))
+       (ExprIsResolved (Concat c1 c2))
+       ;; canonicalize Concat to be right deep
+       (= c1 (Single c1-inner)))
       ((DelayedDropUnion lhs (Concat
             (DropAtInternal newty newctx idx c1)
             (DropAtInternal newty newctx idx c2))))
