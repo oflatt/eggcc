@@ -50,6 +50,8 @@
   (InSwitch i64 Expr Expr)
   ; If the predicate was true, and what the predicate is, and what the input is
   (InIf bool Expr Expr)
+  ; For intermediate values, i.e. permutations in ivt.egg we can assume nothing
+  (NoCtx)
 )
 
 

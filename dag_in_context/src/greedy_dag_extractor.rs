@@ -987,7 +987,7 @@ impl CostModel for DefaultCostModel {
             "Empty" | "Single" | "Concat" | "Nil" | "Cons" => 0.,
             // small cost for get to encourage canonicalization
             // enables state edge passthrough to work as a pass
-            "Get" => 0.01,
+            "Get" => 0.01, 
             // Types
             "IntT" | "BoolT" | "FloatT" | "PointerT" | "StateT" => 0.,
             "Base" | "TupleT" | "TNil" | "TCons" => 0.,

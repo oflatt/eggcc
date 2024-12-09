@@ -15,21 +15,6 @@
 ; if lo > hi, we have proven that this code is dead (as long as all our rules are sound)
 ; In this case, interval analysis might start going crazy and fail to saturate
 ; So we immediately set the bounds to (Dead)
-(rule (
-         (= (IntB lo) (lo-bound expr))
-         (= (IntB hi) (hi-bound expr))
-         (> lo hi)
-       ) 
-       ((set (lo-bound expr) (Dead))
-        (set (hi-bound expr) (Dead)))
-       :ruleset interval-analysis)
-(rule (
-      (= (BoolB true) (lo-bound expr))
-      (= (BoolB false) (hi-bound expr))
-      ) 
-      ((set (lo-bound expr) (Dead))
-       (set (hi-bound expr) (Dead)))
-       :ruleset interval-analysis)
 
 ; combinators
 (rewrite (bound-max (IntB x) (IntB y))
@@ -44,18 +29,7 @@
 (rewrite (bound-min (BoolB x) (BoolB y))
          (BoolB (and x y))
          :ruleset interval-analysis)
-(rewrite (bound-max (Dead) anything)
-         (Dead)
-         :ruleset interval-analysis)
-(rewrite (bound-max anything (Dead))
-         (Dead)
-         :ruleset interval-analysis)
-(rewrite (bound-min (Dead) anything)
-         (Dead)
-         :ruleset interval-analysis)
-(rewrite (bound-min anything (Dead))
-         (Dead)
-         :ruleset interval-analysis)
+
 
 ; =================================
 ; Constants
@@ -113,145 +87,6 @@
       ((union expr (Const (Bool false) ty ctx)))
       :ruleset interval-analysis)
 
-; =================================
-; Arithmetic
-; =================================
-; + a b interval is (+ la lb) (+ ha hb)
-(rule (
-       (= lhs (Bop (Add) a b))
-       (= (IntB la) (lo-bound a))
-       (= (IntB lb) (lo-bound b))
-      )
-      ((set (lo-bound lhs) (IntB (+ la lb))))
-      :ruleset interval-analysis)
-(rule (
-       (= lhs (Bop (Add) a b))
-       (= (IntB ha) (hi-bound a))
-       (= (IntB hb) (hi-bound b))
-      )
-      ((set (hi-bound lhs) (IntB (+ ha hb))))
-      :ruleset interval-analysis)
-
-; - a b interval is (- la hb) (- ha lb)
-(rule (
-       (= lhs (Bop (Sub) a b))
-       (= (IntB la) (lo-bound a))
-       (= (IntB hb) (hi-bound b))
-      )
-      ((set (lo-bound lhs) (IntB (- la hb))))
-      :ruleset interval-analysis)
-(rule (
-       (= lhs (Bop (Sub) a b))
-       (= (IntB ha) (hi-bound a))
-       (= (IntB lb) (lo-bound b))
-      )
-      ((set (hi-bound lhs) (IntB (- ha lb))))
-      :ruleset interval-analysis)
-
-; Multiplication for two constants
-; TODO: Make fancier interval analysis
-(rule (
-       (= lhs (Bop (Mul) a b))
-       (= (IntB x) (lo-bound a))
-       (= (IntB x) (hi-bound a))
-       (= (IntB y) (lo-bound b))
-       (= (IntB y) (hi-bound b))
-      )
-      (
-       (set (lo-bound lhs) (IntB (* x y)))
-       (set (hi-bound lhs) (IntB (* x y)))
-      )
-      :ruleset interval-analysis)
-
-; negative * negative is positive
-(rule (
-        (= lhs (Bop (Mul) x y))
-        (= (IntB hi-x) (hi-bound x))
-        (= (IntB hi-y) (hi-bound y))
-        (<= hi-x 0)
-        (<= hi-y 0) 
-      )
-      ((set (lo-bound lhs) (IntB 0)))
-      :ruleset interval-analysis)
-
-; negative * positive is negative
-(rule (
-        (= lhs (Bop (Mul) x y))
-        (= (IntB hi-x) (hi-bound x))
-        (= (IntB lo-y) (lo-bound y))
-        (<= hi-x 0) ; x <= 0 (x is negative)
-        (>= lo-y 0) ; y >= 0 (y is positive)
-      )
-      ((set (hi-bound lhs) (IntB 0)))
-      :ruleset interval-analysis)
-
-; positive * positive is positive
-(rule (
-        (= lhs (Bop (Mul) x y))
-        (= (IntB lo-x) (lo-bound x))
-        (= (IntB lo-y) (lo-bound y))
-        (>= lo-x 0)
-        (>= lo-y 0)
-      )
-      ((set (lo-bound lhs) (IntB 0)))
-      :ruleset interval-analysis)
-
-; < a b interval is (< ha lb) (< la hb)
-(rule (
-       (= lhs (Bop (LessThan) a b))
-       (= (IntB ha) (hi-bound a))
-       (= (IntB lb) (lo-bound b))
-      )
-      (
-       (set (lo-bound lhs) (BoolB (bool-< ha lb)))
-      )
-      :ruleset interval-analysis)
-(rule (
-       (= lhs (Bop (LessThan) a b))
-       (= (IntB la) (lo-bound a))
-       (= (IntB hb) (hi-bound b))
-      )
-      ((set (hi-bound lhs) (BoolB (bool-< la hb))))
-      :ruleset interval-analysis)
-
-; =================================
-; Conditionals
-; =================================
-; if the predicate is true, merge with then branch
-(rule (
-       (= lhs (If cond inputs thn els))
-       (ContextOf lhs if_ctx)
-       (= (BoolB true) (lo-bound cond))
-      )
-      ((union lhs (Subst if_ctx inputs thn)))
-      :ruleset interval-rewrite)
-
-; if the predicate is false, merge with else branch
-(rule (
-       (= lhs (If cond inputs thn els))
-       (ContextOf lhs if_ctx)
-       (= (BoolB false) (hi-bound cond))
-      )
-      ((union lhs (Subst if_ctx inputs els)))
-      :ruleset interval-rewrite)
-
-; lo-bound of If is the min of the lower bounds
-; hi-bound of If is the max of the upper bounds
-(rule (
-        (= lhs (If cond inputs thn els))
-        (= lo-thn (lo-bound thn))
-        (= lo-els (lo-bound els))
-      )
-      ((set (lo-bound lhs) (bound-min lo-thn lo-els)))
-      :ruleset interval-analysis)
-(rule (
-       (= lhs (If cond inputs thn els))
-       (= hi-thn (hi-bound thn))
-       (= hi-els (hi-bound els))
-      )
-      ((set (hi-bound lhs) (bound-max hi-thn hi-els)))
-      :ruleset interval-analysis)
-
 ; Same rules, but for Ifs that have multiple outputs
 (rule (
         (= lhs (If pred inputs thn els))
@@ -268,68 +103,6 @@
       ((set (hi-bound (Get lhs i)) (bound-max hi-thn hi-els)))
       :ruleset interval-analysis)
 
-; If the If takes a tuple
-(rule (
-        ; expr < value
-        (= pred (Bop (LessThan) expr value))
-        (= if_e (If pred inputs then else))
-        ; the left operand of the < is an input to the if region
-        (= expr (Get inputs i))
-        ; the right operand of the < has an upper bound
-        (= (IntB v) (hi-bound value))
-        ; context node inside the if region
-        (= ctx (Arg ty (InIf true pred inputs)))
-        (HasType inputs ty)
-      )
-      ; expr < value was true, so we know expr is at most (hi-bound value) - 1
-      ((set (hi-bound (Get ctx i)) (IntB (- v 1)))) 
-      :ruleset interval-analysis)
-(rule (
-        ; expr < value
-        (= pred (Bop (LessThan) expr value))
-        (= if_e (If pred inputs then else))
-        ; the left operand of the < is an input to the if region
-        (= expr (Get inputs i))
-        ; the right operand of the < has a lower bound
-        (= (IntB v) (lo-bound value))
-        ; context node inside the if region
-        (= ctx (Arg ty (InIf false pred inputs)))
-        (HasType inputs ty)
-      )
-      ; expr < value was false, so we know expr is at least (lo-bound value)
-      ((set (lo-bound (Get ctx i)) (IntB v))) 
-      :ruleset interval-analysis)
-
-(rule (
-        ; value < expr
-        (= pred (Bop (LessThan) value expr))
-        (= if_e (If pred inputs then else))
-        ; the right operand of the < is an input to the if region
-        (= expr (Get inputs i))
-        ; the left operand of the < has a lower bound
-        (= (IntB v) (lo-bound value))
-        ; context node inside the if region
-        (= ctx (Arg ty (InIf true pred inputs)))
-        (HasType inputs ty)
-      )
-      ; value < expr was true, so we know expr is at least (lo-bound value) + 1
-      ((set (lo-bound (Get ctx i)) (IntB (+ v 1)))) 
-      :ruleset interval-analysis)
-(rule (
-        ; value < expr
-        (= pred (Bop (LessThan) value expr))
-        (= if_e (If pred inputs then else))
-        ; the right operand of the < is an input to the if region
-        (= expr (Get inputs i))
-        ; the left operand of the < has an upper bound
-        (= (IntB v) (hi-bound value))
-        ; context node inside the if region
-        (= ctx (Arg ty (InIf false pred inputs)))
-        (HasType inputs ty)
-      )
-      ; value < expr was false, so we know expr is at most (hi-bound value)
-      ((set (hi-bound (Get ctx i)) (IntB v))) 
-      :ruleset interval-analysis)
 
 ;; Push intervals for inputs into if region
 (rule (
@@ -351,38 +124,16 @@
       ((set (hi-bound (Get ctx i)) hi))
       :ruleset interval-analysis)
 
-; (if (a == b) thn els)
-; in the thn branch, we know that a has the same bounds as b
-(rule (
-       (= pred (Bop (Eq) expr val))
-       (= if_e (If pred inputs thn els))
-       ; the left operand of the == is an input to the if region
-       (= expr (Get inputs i))
-       (= ctx  (Arg ty (InIf true pred inputs)))
-       (HasType inputs ty)
-       (= (IntB lo) (lo-bound val))
-      )
-      ((set (lo-bound (Get ctx i)) (IntB lo)))
-      :ruleset interval-analysis)
-(rule (
-       (= pred (Bop (Eq) expr val))
-       (= if_e (If pred inputs thn els))
-       ; the left operand of the == is an input to the if region
-       (= expr (Get inputs i))
-       (= ctx (Arg ty (InIf true pred inputs)))
-       (HasType inputs ty)
-       (= (IntB hi) (hi-bound val))
-      )
-      ((set (hi-bound (Get ctx i)) (IntB hi)))
-      :ruleset interval-analysis)
+
 
 
 (rule (
        ;; argument has loop context
        (Arg ty (InLoop inputs outputs))
+       (DoWhile inputs outputs)
        ;; in the loop, the argument is passed through
        ;; note that some_ctx is not the same as (InLoop inputs outputs)
-       (= (Get (Arg ty some_ctx) ith) (Get outputs (+ 1 ith)))
+       (= (Get (Arg ty (InLoop inputs outputs)) ith) (Get outputs (+ 1 ith)))
        ;; input has some bound
        (= bound (lo-bound (Get inputs ith)))
       )
@@ -393,8 +144,9 @@
 (rule (
        ;; argument has loop context
        (Arg ty (InLoop inputs outputs))
+       (DoWhile inputs outputs)
        ;; in the loop, the argument is passed through
-       (= (Get (Arg ty some_ctx) ith) (Get outputs (+ 1 ith)))
+       (= (Get (Arg ty (InLoop inputs outputs)) ith) (Get outputs (+ 1 ith)))
        ;; input has some bound
        (= bound (hi-bound (Get inputs ith)))
       )
