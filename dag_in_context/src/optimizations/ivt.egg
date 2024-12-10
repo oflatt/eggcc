@@ -70,9 +70,9 @@
     (= next (Get loop-body (+ ith 1)))
     (HasType (Get (Arg ty ctx) ith) (Base new-ty))
     (= expr (If pred inputs then else))
-    (= (tuple-length inputs) inputs-len)
+    (= (tuple-length expr) if-len)
 ) (
-    (let get-passed-through (Single (Get (Arg (TmpType) (NoCtx)) (+ inputs-len len))))
+    (let get-passed-through (Single (Get (Arg (TmpType) (NoCtx)) (+ if-len len))))
     (let new-perm (Concat perm get-passed-through))
     (let original-get-index (Single (Get (Arg (TmpType) (NoCtx)) ith)))
     (let new-pperm (Concat pperm original-get-index))
@@ -97,9 +97,9 @@
     (= (Get loop-body (+ ith 1)) (Get curr 0))
     (HasType (Get (Arg ty ctx) ith) (Base new-ty))
     (= expr (If pred inputs then else))
-    (= (tuple-length inputs) inputs-len)
+    (= (tuple-length expr) if-len)
 ) (
-    (let get-passed-through (Single (Get (Arg (TmpType) (NoCtx)) (+ inputs-len len))))
+    (let get-passed-through (Single (Get (Arg (TmpType) (NoCtx)) (+ if-len len))))
     (let new-perm (Concat perm get-passed-through))
     (let original-get-index (Single (Get (Arg (TmpType) (NoCtx)) ith)))
     (let new-pperm (Concat pperm original-get-index))
@@ -112,9 +112,8 @@
 
 (rule (
     (= loop (DoWhile inpW outW))
-    (= (IVTNewInputsAnalysis outW if) (IVTAnalysisRes perm pperm passthrough-tys _len))
+    (= (IVTNewInputsAnalysis outW if) (IVTAnalysisRes perm pperm passthrough-tys passthrough-len))
     (= if-inputs-len (tuple-length if-inputs))
-    (= passthrough-len (TypeList-length passthrough-tys))
     (= if (If if-cond if-inputs then else))
 
     (ContextOf inpW outer-ctx)

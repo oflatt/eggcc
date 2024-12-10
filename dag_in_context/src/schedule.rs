@@ -113,51 +113,7 @@ pub fn rulesets() -> String {
 }
 
 pub fn mk_sequential_schedule() -> Vec<CompilerPass> {
-    let helpers = helpers();
-
-    let mut res = vec![CompilerPass::Schedule(format!(
-        "
-(run-schedule
-   (saturate
-      {helpers}
-      passthrough
-      state-edge-passthrough))"
-    ))];
-    res.push(CompilerPass::Schedule(format!(
-        "
-(run-schedule
-  (repeat 3
-    {helpers}
-    (saturate ivt-analysis)
-    loop-inversion)
-  
-  {helpers})"
-    )));
-    res.push(CompilerPass::Schedule(format!(
-        "
-(run-schedule
-  (repeat 2
-      {helpers}
-      swap-if)
-  {helpers}
-  rec-to-loop
-  {helpers})"
-    )));
-    res.push(CompilerPass::InlineWithSchedule(format!(
-        "
-(run-schedule {helpers})"
-    )));
-    res.extend(optimizations().iter().map(|optimization| {
-        CompilerPass::Schedule(format!(
-            "
-(run-schedule
-   {helpers}
-   {optimization}
-   {helpers})
-"
-        ))
-    }));
-    res
+    vec![]
 }
 
 pub fn parallel_schedule() -> Vec<CompilerPass> {
