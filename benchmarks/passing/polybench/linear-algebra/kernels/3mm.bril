@@ -127,7 +127,7 @@
     jmp .part3_i;
 .part3_i_done:
 
-    res: float = call @matrix_sum G NI NL;
+    res: float = call @matrix_sum E NI NJ;
 
     free A;
     free B;
