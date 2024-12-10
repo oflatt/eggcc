@@ -120,64 +120,12 @@
     (ContextOf if-inputs if-ctx)
     (HasType if-inputs inputs-ty)
     (= inputs-ty (TupleT inputs-ty-list))
-) (
+    (= if-cond (Bop (LessThan) a b))
+    (= a (Get (Arg a-ctx a-ty) ind1))
+    (= b (Get (Arg b-ctx b-ty) ind2))
+    (= (lo-bound b) lob)
+    (= (hi-bound b) hib)
+) ( 
     ;; new peeled condition, checks the if's condition before the first iteration
-    (let new-if-cond (Subst outer-ctx inpW if-cond))
-
-    ;; new inputs to the if are 1) the inputs run once unconditionally concatted with
-    ;; 2) the passthrough values
-    (let new-if-inp
-        (Concat (Subst outer-ctx inpW if-inputs)
-                (Subst outer-ctx inpW pperm)))
-    ;; if contexts
-    (let new-if-true-ctx (InIf true new-if-cond new-if-inp))
-    (let new-if-false-ctx (InIf false new-if-cond new-if-inp))
-
-    (let new-loop-arg-ty (TupleT (TLConcat inputs-ty-list passthrough-tys)))
-    (let new-loop-arg (Arg new-loop-arg-ty (TmpCtx)))
-    (let new-loop-context (TmpCtx))
-
-    ;; body
-    ;; loop begins by running the then branch of the if statement, which uses the first if-inputs-length elements of arg
-    (let then-arg (SubTuple new-loop-arg 0 if-inputs-len))
-    (let new-then-branch
-        (Subst new-loop-context then-arg then))
-    ;; the inputs are then run on the combination of
-    ;; the then branch and the passthrough values
-    (let then-branch-and-passthrough
-      (Concat new-then-branch (SubTuple new-loop-arg if-inputs-len passthrough-len)))
-    ;; permute them tok move passthrough and if outputs back
-    ;; to where if-inputs and if-cond expect them to be
-    (let permuted-then-branch-and-passthrough
-      (Subst new-loop-context then-branch-and-passthrough perm))
-    ;; substitute into inputs and condi
-    (let new-inputs-after-then-branch 
-        (Subst new-loop-context permuted-then-branch-and-passthrough
-            (Concat (Single if-cond) if-inputs)))
-    (let new-loop-outputs
-        (Concat new-inputs-after-then-branch
-           (SubTuple new-loop-arg if-inputs-len passthrough-len)))
-
-    (let new-loop (DoWhile (Arg new-loop-arg-ty new-if-true-ctx) new-loop-outputs))
-    (let new-if
-        (If new-if-cond new-if-inp
-            new-loop
-            (Arg new-loop-arg-ty new-if-false-ctx)))
-
-    ;; Apply thewbody of the false branch as an afterprocessing wrapperw
-    (let final-if-inputs
-       (SubTuple new-if 0 if-inputs-len))
-    (let else-branch-end
-        (Subst outer-ctx final-if-inputs else))
-    (let else-branch-end-and-passthrough
-        (Concat else-branch-end
-               (SubTuple new-if if-inputs-len passthrough-len)))
-    (let final-permuted
-        (Subst outer-ctx else-branch-end-and-passthrough perm))
-
-    (union final-permuted loop)
-    (union new-loop-context (InLoop (Arg new-loop-arg-ty new-if-true-ctx) new-loop-outputs))
-
-    (subsume (DoWhile inpW outW))
-    (delete (TmpCtx))
+      (Subst outer-ctx inpW b)
 ) :ruleset loop-inversion)
