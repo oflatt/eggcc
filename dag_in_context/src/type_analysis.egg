@@ -45,6 +45,23 @@
        (panic "type mismatch- check RUST_LOG=info for expressions that mismatched"))
       :ruleset error-checking)
 
+(rule ((= (Const c ty1 (InFunc _some_func)) (Const c2 ty2 (InFunc _some_func2)))
+       (!= c c2))
+      ((panic "Unsoundness detected- two constants at top level are equal"))
+      :ruleset error-checking)
+
+
+(rule (
+    (= loop (DoWhile inpW outW))
+    (= (Const c1 ty1 ctx1) (Get inpW ind1))
+    (= (Const c2 ty2 ctx2) (Get outW (+ ind1 1)))
+    (!= c1 c2)
+) ( 
+    (extract c1)
+    (extract c2)
+    (panic "Unsoundness detected- constant not equal to input to loop")
+) :ruleset error-checking)
+
 (relation HasArgType (Expr Type))
 
 (rule ((HasArgType (Arg t1 ctx) t2)

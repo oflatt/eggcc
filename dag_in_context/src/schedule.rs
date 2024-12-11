@@ -50,17 +50,6 @@ pub(crate) fn helpers() -> String {
         cleanup-drop
     )
 
-    ;(saturate canon)
-    ;(saturate interval-analysis)
-    ;(saturate terms)
-    ;; memory-helpers TODO run memory helpers for memory optimizations
-
-    ;; finally, subsume now that helpers are done
-    ;subsume-after-helpers
-
-    ;; do a boundary analysis for loop invariant code motion
-    ;boundary-analysis
-
     loop-iters-analysis
 "
     .to_string()
@@ -130,12 +119,8 @@ pub fn parallel_schedule() -> Vec<CompilerPass> {
         CompilerPass::Schedule(format!(
             "
 (run-schedule
-    {helpers}
-    (saturate interval-analysis) ;; necessary
-    (saturate ivt-analysis)
-    loop-inversion
-
-    {helpers})"
+   {helpers}
+   sanitycheck)"
         )),
     ]
 }

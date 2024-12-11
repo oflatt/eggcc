@@ -370,6 +370,7 @@ pub fn optimize(
 
             log::info!("Running egglog program...");
             let mut egraph = egglog::EGraph::default();
+            eprintln!("Prog: {}", egglog_prog);
             egraph.parse_and_run_program(None, &egglog_prog)?;
 
             let (serialized, unextractables) = serialized_egraph(egraph);
@@ -401,6 +402,7 @@ pub fn optimize(
         }
 
         // now add context to res again for the next pass, since context might be less specific
+        res = res.add_dummy_ctx().0;
         res = res.add_context().0;
     }
     Ok(res)

@@ -13,30 +13,6 @@
        ((union lhs (Get inputs i)))
        :ruleset passthrough)
 
-;; Pass through switch arguments
-(rule ((= lhs (Get switch i))
-       (= switch (Switch pred inputs branches))
-       (= (ListExpr-length branches) 2)
-       (= branch0 (ListExpr-ith branches 0))
-       (= branch1 (ListExpr-ith branches 1))
-       (= (Get branch0 i) (Get (Arg _ _ctx0) j))
-       (= (Get branch1 i) (Get (Arg _ _ctx1) j))
-       (= passed-through (Get inputs j))
-       (HasType lhs lhs_ty)
-       (!= lhs_ty (Base (StateT))))
-      ((union lhs passed-through))
-      :ruleset passthrough)
-
-;; Pass through switch predicate
-(rule ((= lhs (Get switch i))
-       (= switch (Switch pred inputs branches))
-       (= (ListExpr-length branches) 2)
-       (= branch0 (ListExpr-ith branches 0))
-       (= branch1 (ListExpr-ith branches 1))
-       (= (Get branch0 i) (Const (Bool false) _ _ctx0))
-       (= (Get branch1 i) (Const (Bool true) _ _ctx1)))
-      ((union lhs pred))
-      :ruleset passthrough)
 
 ;; Pass through if arguments
 (rule ((= if (If pred inputs then_ else_))
@@ -49,63 +25,20 @@
       ((union (Get if i) (Get inputs j)))
       :ruleset passthrough)
 
-; Pass through if state edge arguments
-; To maintain the invariant, we have to union the other outputs with a pure if statement
-(ruleset state-edge-passthrough)
 
-(rule ((= outputs (If pred inputs then_ else_))
+(ruleset sanitycheck)
 
-       (= (Get then_ i) (Get (Arg arg_ty then_ctx) j))
-       (= (Get else_ i) (Get (Arg arg_ty else_ctx) j))
+(rule ((DoWhile inputs outputs)
+       (= (Get outputs (+ ith 1)) (Get (Arg ty ctx) ith))
+       (= ctx (InLoop inputs2 outputs2))
+       (!= inputs2 inputs))
+      ((DebugExpr inputs2)
+       (DebugExpr inputs)
+       (panic "found")
+       )
+       :ruleset sanitycheck)
 
-       (HasType (Get then_ i) (Base (StateT))))
-
-      ((let lhs (Get outputs i))
-       (let new_inputs (TupleRemoveAt inputs j))
-
-       (let new_then_ctx (InIf true  pred new_inputs))
-       (let new_else_ctx (InIf false pred new_inputs))
-
-       (let old_then (TupleRemoveAt then_ i))
-       (let old_else (TupleRemoveAt else_ i))
-
-       (let new_then (DropAt new_then_ctx j old_then))
-       (let new_else (DropAt new_else_ctx j old_else))
-
-       (let old_outputs (TupleRemoveAt outputs i))
-       (let new_if (If pred new_inputs new_then new_else))
-       (union new_if old_outputs)
-
-       (union lhs (Get inputs j))
-       ;; Be careful not to subsume the original if statement immediately,
-       ;;  since TupleRemoveAt still needs to match on it
-       (ToSubsumeIf pred inputs then_ else_))
-      :ruleset state-edge-passthrough)
-
-;; Pass through if predicate
-(rule ((= if (If pred inputs then_ else_))
-       (= (Get then_ i) (Const (Bool true) _ _thenctx))
-       (= (Get else_ i) (Const (Bool false) _ _elsectx)))
-
-      ((let new_then (TupleRemoveAt then_ i))
-       (let new_else (TupleRemoveAt else_ i))
-       (let new_if (If pred inputs new_then new_else))
-
-       (union (Get           if i) pred)
-       (union (TupleRemoveAt if i) new_if)
-       (ToSubsumeIf pred inputs then_ else_))
-      :ruleset passthrough)
-
-;; Pass through inverted if predicate
-(rule ((= if (If pred inputs then_ else_))
-       (= (Get then_ i) (Const (Bool false) _ _thenctx))
-       (= (Get else_ i) (Const (Bool true) _ _elsectx)))
-
-      ((let new_then (TupleRemoveAt then_ i))
-       (let new_else (TupleRemoveAt else_ i))
-       (let new_if (If pred inputs new_then new_else))
-
-       (union (Get           if i) (Uop (Not) pred))
-       (union (TupleRemoveAt if i) new_if)
-       (ToSubsumeIf pred inputs then_ else_))
-      :ruleset passthrough)
+(rule ((= (InLoop inputs1 outputs1) (InLoop inputs2 outputs2))
+       (!= inputs1 inputs2))
+      ((panic "found unioned ctxs"))
+       :ruleset sanitycheck)

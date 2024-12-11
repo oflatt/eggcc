@@ -110,22 +110,3 @@
 
 (ruleset loop-inversion)
 
-(rule (
-    (= loop (DoWhile inpW outW))
-    (= (IVTNewInputsAnalysis outW if) (IVTAnalysisRes perm pperm passthrough-tys passthrough-len))
-    (= if-inputs-len (tuple-length if-inputs))
-    (= if (If if-cond if-inputs then else))
-
-    (ContextOf inpW outer-ctx)
-    (ContextOf if-inputs if-ctx)
-    (HasType if-inputs inputs-ty)
-    (= inputs-ty (TupleT inputs-ty-list))
-    (= if-cond (Bop (LessThan) a b))
-    (= a (Get (Arg a-ctx a-ty) ind1))
-    (= b (Get (Arg b-ctx b-ty) ind2))
-    (= (lo-bound b) lob)
-    (= (hi-bound b) hib)
-) ( 
-    ;; new peeled condition, checks the if's condition before the first iteration
-      (Subst outer-ctx inpW b)
-) :ruleset loop-inversion)
