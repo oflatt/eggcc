@@ -59,7 +59,7 @@ impl<'a> FromEgglog<'a> {
         })
     }
 
-    fn basetype_from_egglog(&mut self, basetype: Term) -> BaseType {
+    pub(crate) fn basetype_from_egglog(&mut self, basetype: Term) -> BaseType {
         match_term_app!(basetype.clone(); {
           ("IntT", []) => BaseType::IntT,
           ("FloatT", []) => BaseType::FloatT,
@@ -342,6 +342,9 @@ impl<'a> FromEgglog<'a> {
               self.type_from_egglog(type2.clone()),
               self.expr_from_egglog(expr.clone()),
             ))
+          }
+          ("DeadCode", [subexpr]) => {
+            Rc::new(Expr::DeadCode(self.expr_from_egglog(self.termdag.get(*subexpr).clone())))
           }
           _ => panic!("Invalid expr: {:?}", expr),
         });
